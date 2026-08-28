@@ -33,7 +33,6 @@ function typeText(text, done){
 }
 
 envelope.addEventListener("click", ()=>{
-  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && !musicOn) playMusic();
   envelope.classList.add("open");
   romanticBurst(20);
   for(let i=0;i<14;i++) setTimeout(()=>spawnPetal(true),i*55);
@@ -102,7 +101,6 @@ function spawnHeart(intense=false){
   else if(styleRoll>.42) h.classList.add("heart-soft");
   else h.classList.add("heart-outline");
 
-  // small random depth effect
   h.style.opacity=(.66+Math.random()*.34).toFixed(2);
   $("#heartRain").appendChild(h);
   setTimeout(()=>h.remove(),10000);
@@ -119,7 +117,6 @@ function spawnSparkle(){
   setTimeout(()=>s.remove(),9500);
 }
 
-// richer ambient stream: dense enough to feel magical, still mobile friendly
 setInterval(()=>{
   if(!ambientMode) return;
   spawnHeart(false);
@@ -127,8 +124,6 @@ setInterval(()=>{
   if(Math.random() > (iphoneBoost ? .28 : .42)) spawnSparkle();
 }, iphoneBoost ? 300 : 360);
 
-
-// ===== WOW AMBIENT EFFECTS =====
 function spawnPetal(intense=false){
   const p=document.createElement("span");
   p.className="rose-petal";
@@ -176,26 +171,19 @@ function romanticBurst(count=44){
     const h=document.createElement("span");
     h.className="heart-burst";
     h.textContent=HEARTS[Math.floor(Math.random()*HEARTS.length)];
-
     const angle=Math.random()*Math.PI*2;
     const distance=95+Math.random()*Math.min(innerWidth,innerHeight)*.62;
     const x=Math.cos(angle)*distance;
     const y=Math.sin(angle)*distance;
-
     h.style.setProperty("--x",x+"px");
     h.style.setProperty("--y",y+"px");
     h.style.setProperty("--rot",(-120+Math.random()*240)+"deg");
     h.style.setProperty("--size",(18+Math.random()*34)+"px");
     h.style.setProperty("--duration",(1.15+Math.random()*1.55)+"s");
-
     document.body.appendChild(h);
     setTimeout(()=>h.remove(),2900);
   }
-
-  // Follow-up wave for a fuller, more luxurious finale
-  for(let i=0;i<26;i++){
-    setTimeout(()=>spawnHeart(true),i*55);
-  }
+  for(let i=0;i<26;i++) setTimeout(()=>spawnHeart(true),i*55);
 }
 
 function burstConfetti(){
@@ -211,7 +199,6 @@ function burstConfetti(){
   }
 }
 
-
 function flashScene(){
   const f=$("#sceneFlash");
   if(!f) return;
@@ -224,20 +211,14 @@ function buildHeartConstellation(){
   const box=$("#heartConstellation");
   if(!box || box.dataset.built==="1") return;
   box.dataset.built="1";
-
   const pts=[];
   const W=320,H=150,cx=160,cy=73;
   for(let i=0;i<34;i++){
     const t=(Math.PI*2*i)/34;
-    // classic heart curve
     const x=16*Math.sin(t)**3;
     const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
-    pts.push({
-      x:cx+x*8.0,
-      y:cy-y*6.1
-    });
+    pts.push({x:cx+x*8.0,y:cy-y*6.1});
   }
-
   pts.forEach((p,i)=>{
     const d=document.createElement("span");
     d.className="constellation-dot";
@@ -245,7 +226,6 @@ function buildHeartConstellation(){
     d.style.top=`${(p.y/H)*100}%`;
     d.style.setProperty("--t",(1.15+Math.random()*1.8)+"s");
     box.appendChild(d);
-
     if(i<pts.length-1){
       const q=pts[i+1];
       const dx=q.x-p.x,dy=q.y-p.y;
@@ -272,7 +252,6 @@ function setupCouplePhoto(){
 }
 setupCouplePhoto();
 
-// starfield
 const canvas=$("#stars"), ctx=canvas.getContext("2d");
 let stars=[];
 function resize(){
@@ -294,83 +273,96 @@ function draw(){
 }
 addEventListener("resize",resize); resize(); draw();
 
-// robust local music for iPhone/Safari
+// v0.3.3 - reliable music playback for iPhone/Safari
 const audio = $("#bgMusic");
 const musicBtn = $("#musicBtn");
 const musicHint = $("#musicHint");
 let musicOn = false;
-let musicReady = false;
 
-if (cfg.enableLocalMusic && audio) {
-  audio.src = cfg.musicFile || "music.mp3";
-  audio.volume = .42;
-  audio.preload = "auto";
-  try { audio.load(); } catch(e) {}
-}
-
-function showMusicHint(text="Chạm ♫ để bật nhạc ❤️"){
+function showMusicHint(text="Chạm ♫ để bật nhạc ❤️", sticky=false){
   if(!musicHint) return;
   musicHint.textContent = text;
   musicHint.classList.add("show");
   clearTimeout(showMusicHint._t);
-  showMusicHint._t = setTimeout(()=>musicHint.classList.remove("show"),3200);
+  if(!sticky) showMusicHint._t = setTimeout(()=>musicHint.classList.remove("show"),3600);
 }
 
-async function playMusic(){
-  if(!cfg.enableLocalMusic || !audio) return false;
+function syncMusicUI(){
+  musicOn = !!audio && !audio.paused && !audio.ended;
+  if(!musicBtn) return;
+  musicBtn.textContent = musicOn ? "❚❚" : "♫";
+  musicBtn.classList.toggle("playing", musicOn);
+  if(musicOn) musicHint?.classList.remove("show");
+}
+
+if(cfg.enableLocalMusic && audio){
+  const file = cfg.musicFile || "music.mp3";
+  const sep = file.includes("?") ? "&" : "?";
+  audio.src = `${file}${sep}v=033`;
+  audio.loop = true;
+  audio.preload = "auto";
+  audio.volume = .55;
+  audio.muted = false;
+  audio.setAttribute("playsinline", "");
+  audio.setAttribute("webkit-playsinline", "");
+  try{ audio.load(); }catch(e){}
+}
+
+function startMusic(){
+  if(!cfg.enableLocalMusic || !audio) return;
+  audio.muted = false;
+  audio.volume = .55;
   try{
-    // Safari behaves more reliably when load() has already been called.
-    if(audio.readyState === 0) audio.load();
-    const p = audio.play();
-    if(p && typeof p.then === "function") await p;
-    musicOn = true;
-    musicReady = true;
-    musicBtn.textContent = "❚❚";
-    musicBtn.classList.add("playing");
-    musicHint?.classList.remove("show");
-    return true;
+    const promise = audio.play();
+    if(promise && typeof promise.catch === "function"){
+      promise.then(syncMusicUI).catch(err=>{
+        syncMusicUI();
+        console.warn("Audio play blocked:", err);
+        showMusicHint("Chạm nút ♫ để bật nhạc ❤️", true);
+      });
+    }
   }catch(err){
-    musicOn = false;
-    musicBtn.textContent = "♫";
-    musicBtn.classList.remove("playing");
-    showMusicHint("Chạm ♫ một lần để bật nhạc ❤️");
-    console.warn("Music play failed:", err);
-    return false;
+    console.warn("Audio play failed:", err);
+    showMusicHint("Chạm nút ♫ để bật nhạc ❤️", true);
   }
 }
 
 function stopMusic(){
   if(!audio) return;
   audio.pause();
-  musicOn = false;
-  musicBtn.textContent = "♫";
-  musicBtn.classList.remove("playing");
+  syncMusicUI();
 }
 
-// Important for iPhone: start audio directly from the earliest touch gesture.
-function firstGestureMusic(){
-  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && !musicOn){
-    playMusic();
-  }
-}
-envelope.addEventListener("touchstart", firstGestureMusic, {passive:true, once:true});
-envelope.addEventListener("pointerdown", firstGestureMusic, {passive:true, once:true});
+envelope.addEventListener("click", ()=>{
+  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && audio?.paused) startMusic();
+}, {capture:true});
 
-musicBtn.addEventListener("touchstart", (e)=>{
-  // Keep a direct user-gesture path for Safari.
-  if(!musicOn) playMusic();
-}, {passive:true});
-
-musicBtn.addEventListener("click", async ()=>{
+musicBtn.addEventListener("click", (e)=>{
+  e.preventDefault();
+  e.stopPropagation();
   if(!cfg.enableLocalMusic || !audio){
-    musicBtn.textContent="♡";
+    showMusicHint("Chưa bật file nhạc trong config.js", true);
     return;
   }
-  if(musicOn) stopMusic();
-  else await playMusic();
+  if(audio.paused || audio.ended) startMusic();
+  else stopMusic();
 });
 
+audio?.addEventListener("playing", syncMusicUI);
+audio?.addEventListener("pause", syncMusicUI);
+audio?.addEventListener("ended", syncMusicUI);
+audio?.addEventListener("canplay", ()=>{
+  if(!musicOn && cfg.enableLocalMusic) musicBtn.title = "Bật nhạc";
+});
 audio?.addEventListener("error", ()=>{
-  showMusicHint("Không đọc được music.mp3");
+  const code = audio?.error?.code || "?";
+  console.warn("music.mp3 error code:", code, audio?.currentSrc);
+  showMusicHint("Không đọc được music.mp3 – hãy thử chạm ♫", true);
 });
 
+window.addEventListener("pageshow", ()=>{
+  syncMusicUI();
+  if(cfg.enableLocalMusic && audio && audio.readyState === 0){
+    try{ audio.load(); }catch(e){}
+  }
+});
