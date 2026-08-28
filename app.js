@@ -27,6 +27,7 @@ function typeText(text, done){
 
 envelope.addEventListener("click", ()=>{
   envelope.classList.add("open");
+  romanticBurst(18);
   setTimeout(()=>{
     showScreen("story");
     msgIndex = 0;
@@ -42,6 +43,7 @@ nextBtn.addEventListener("click", ()=>{
   if(msgIndex < (cfg.messages?.length || 0)){
     typeText(cfg.messages[msgIndex], ()=>nextBtn.classList.remove("hidden"));
   }else{
+    romanticBurst(20);
     showScreen("question");
   }
 });
@@ -56,23 +58,95 @@ $("#thinkBtn").addEventListener("click", ()=>{
 
 $("#yesBtn").addEventListener("click", ()=>{
   burstConfetti();
-  $("#coupleNames").textContent = `${cfg.yourName || "Quang Thuận"} ❤️ ${cfg.partnerName || "Huỳnh Giao"}`;
+  romanticBurst(56);
+  $("#coupleNames").textContent = `${cfg.yourName || "ANH"} ❤️ ${cfg.partnerName || "EM"}`;
   $("#specialDate").textContent = cfg.specialDate || "";
-  setTimeout(()=>showScreen("finale"),350);
-  for(let i=0;i<35;i++) setTimeout(spawnHeart, i*80);
+  setTimeout(()=>{
+    showScreen("finale");
+    romanticBurst(42);
+  },420);
 });
 
-function spawnHeart(){
+const HEARTS = ["❤","♥","♡","💗","💕","💖","💞"];
+let ambientMode = true;
+
+function spawnHeart(intense=false){
   const h=document.createElement("span");
   h.className="floating-heart";
-  h.textContent=["❤","💗","💕","💖"][Math.floor(Math.random()*4)];
+
+  const icon=HEARTS[Math.floor(Math.random()*HEARTS.length)];
+  h.textContent=icon;
+
+  const size=intense ? 18+Math.random()*34 : 12+Math.random()*27;
+  const duration=intense ? 4.2+Math.random()*3.2 : 5.3+Math.random()*4.2;
+
   h.style.left=(Math.random()*100)+"vw";
-  h.style.setProperty("--size",(14+Math.random()*22)+"px");
-  h.style.setProperty("--duration",(5+Math.random()*4)+"s");
+  h.style.setProperty("--size",size+"px");
+  h.style.setProperty("--duration",duration+"s");
+  h.style.setProperty("--drift1",(-45+Math.random()*90)+"px");
+  h.style.setProperty("--drift2",(-85+Math.random()*170)+"px");
+
+  const styleRoll=Math.random();
+  if(styleRoll>.72) h.classList.add("heart-glow");
+  else if(styleRoll>.42) h.classList.add("heart-soft");
+  else h.classList.add("heart-outline");
+
+  // small random depth effect
+  h.style.opacity=(.66+Math.random()*.34).toFixed(2);
   $("#heartRain").appendChild(h);
-  setTimeout(()=>h.remove(),9500);
+  setTimeout(()=>h.remove(),10000);
 }
-setInterval(()=>{ if(Math.random()>.35) spawnHeart(); },900);
+
+function spawnSparkle(){
+  const s=document.createElement("span");
+  s.className="sparkle-dot";
+  s.style.left=(Math.random()*100)+"vw";
+  s.style.setProperty("--dot",(1.5+Math.random()*3.8)+"px");
+  s.style.setProperty("--duration",(4.5+Math.random()*4.5)+"s");
+  s.style.setProperty("--drift",(-55+Math.random()*110)+"px");
+  $("#heartRain").appendChild(s);
+  setTimeout(()=>s.remove(),9500);
+}
+
+// richer ambient stream: dense enough to feel magical, still mobile friendly
+setInterval(()=>{
+  if(!ambientMode) return;
+  spawnHeart(false);
+  if(Math.random()>.35) spawnHeart(false);
+  if(Math.random()>.42) spawnSparkle();
+},360);
+
+function romanticBurst(count=44){
+  const ring=document.createElement("div");
+  ring.className="love-ring";
+  document.body.appendChild(ring);
+  setTimeout(()=>ring.remove(),1300);
+
+  for(let i=0;i<count;i++){
+    const h=document.createElement("span");
+    h.className="heart-burst";
+    h.textContent=HEARTS[Math.floor(Math.random()*HEARTS.length)];
+
+    const angle=Math.random()*Math.PI*2;
+    const distance=95+Math.random()*Math.min(innerWidth,innerHeight)*.62;
+    const x=Math.cos(angle)*distance;
+    const y=Math.sin(angle)*distance;
+
+    h.style.setProperty("--x",x+"px");
+    h.style.setProperty("--y",y+"px");
+    h.style.setProperty("--rot",(-120+Math.random()*240)+"deg");
+    h.style.setProperty("--size",(18+Math.random()*34)+"px");
+    h.style.setProperty("--duration",(1.15+Math.random()*1.55)+"s");
+
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),2900);
+  }
+
+  // Follow-up wave for a fuller, more luxurious finale
+  for(let i=0;i<26;i++){
+    setTimeout(()=>spawnHeart(true),i*55);
+  }
+}
 
 function burstConfetti(){
   for(let i=0;i<90;i++){
