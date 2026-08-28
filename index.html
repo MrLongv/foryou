@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0e0714" />
+  <title>For You ❤️</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div id="heartRain" aria-hidden="true"></div>
+
+  <main class="app">
+    <section id="intro" class="screen active">
+      <div class="glow"></div>
+      <button id="envelope" class="envelope" aria-label="Mở lá thư">
+        <span class="env-back"></span>
+        <span class="paper">
+          <span class="tiny-heart">❤</span>
+        </span>
+        <span class="env-front"></span>
+        <span class="env-flap"></span>
+        <span class="seal">❤</span>
+      </button>
+      <p class="hint">Chạm vào lá thư nhé ❤️</p>
+    </section>
+
+    <section id="story" class="screen">
+      <div class="story-card glass">
+        <div class="mini-heart">❤</div>
+        <p id="typing" class="typing"></p>
+        <button id="nextBtn" class="soft-btn hidden">Tiếp tục ❤️</button>
+      </div>
+    </section>
+
+    <section id="question" class="screen">
+      <div class="question-card glass">
+        <p class="eyebrow">Có một điều anh rất muốn hỏi em...</p>
+        <h1>Em đồng ý làm bạn gái anh nhé? ❤️</h1>
+        <p class="sub">Anh muốn tiến xa hơn trong mối quan hệ này.</p>
+        <div class="actions">
+          <button id="yesBtn" class="yes-btn">❤️ Em đồng ý</button>
+          <button id="thinkBtn" class="think-btn">🙈 Để em suy nghĩ</button>
+        </div>
+        <p id="thinkMsg" class="think-msg"></p>
+      </div>
+    </section>
+
+    <section id="finale" class="screen">
+      <div class="finale-wrap">
+        <div class="big-heart">❤</div>
+        <p class="finale-line">Vậy từ hôm nay...</p>
+        <h2 id="coupleNames">Quang Thuận ❤️ Huỳnh Giao</h2>
+        <p class="finale-quote">Hy vọng đây sẽ là ngày bắt đầu của một câu chuyện thật dài.</p>
+        <p id="specialDate" class="date"></p>
+        <div class="sparkles" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+
+  <button id="musicBtn" class="music-btn" aria-label="Bật/tắt nhạc">♫</button>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
