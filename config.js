@@ -11,9 +11,10 @@ window.LOVE_CONFIG = {
   ],
   thinkMessage: "Không sao đâu… anh vẫn sẽ chờ câu trả lời của em ❤️",
   // Nếu có file MP3 riêng, đặt tên là music.mp3 trong cùng thư mục và đổi thành true.
-  enableLocalMusic: false,
+  enableLocalMusic: true,
   musicFile: "music.mp3",
   autoPlayAfterFirstTap: true,
   couplePhoto: "couple.jpg",
-  showPhotoIfAvailable: true
+  showPhotoIfAvailable: true,
+  iphoneEffectsBoost: true
 };
