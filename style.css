@@ -542,3 +542,27 @@ button{font:inherit}
   .actions{flex-direction:column}
   .yes-btn,.think-btn{width:100%}
 }
+
+.music-hint{
+  position:fixed;
+  z-index:20;
+  right:16px;
+  top:72px;
+  padding:9px 13px;
+  border-radius:999px;
+  background:rgba(22,8,28,.72);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  color:#fff5f8;
+  font-size:13px;
+  opacity:0;
+  transform:translateY(-5px);
+  pointer-events:none;
+  transition:.3s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,.24);
+}
+.music-hint.show{
+  opacity:.9;
+  transform:translateY(0);
+}

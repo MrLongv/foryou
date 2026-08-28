@@ -32,8 +32,8 @@ function typeText(text, done){
   }, 48);
 }
 
-envelope.addEventListener("click", async ()=>{
-  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && !musicOn) await playMusic();
+envelope.addEventListener("click", ()=>{
+  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && !musicOn) playMusic();
   envelope.classList.add("open");
   romanticBurst(20);
   for(let i=0;i<14;i++) setTimeout(()=>spawnPetal(true),i*55);
@@ -294,26 +294,47 @@ function draw(){
 }
 addEventListener("resize",resize); resize(); draw();
 
-// optional local music
-let audio=null, musicOn=false;
-const musicBtn=$("#musicBtn");
+// robust local music for iPhone/Safari
+const audio = $("#bgMusic");
+const musicBtn = $("#musicBtn");
+const musicHint = $("#musicHint");
+let musicOn = false;
+let musicReady = false;
 
-if(cfg.enableLocalMusic){
-  audio=new Audio(cfg.musicFile || "music.mp3");
-  audio.loop=true;
-  audio.volume=.38;
-  audio.preload="auto";
+if (cfg.enableLocalMusic && audio) {
+  audio.src = cfg.musicFile || "music.mp3";
+  audio.volume = .42;
+  audio.preload = "auto";
+  try { audio.load(); } catch(e) {}
+}
+
+function showMusicHint(text="Chạm ♫ để bật nhạc ❤️"){
+  if(!musicHint) return;
+  musicHint.textContent = text;
+  musicHint.classList.add("show");
+  clearTimeout(showMusicHint._t);
+  showMusicHint._t = setTimeout(()=>musicHint.classList.remove("show"),3200);
 }
 
 async function playMusic(){
-  if(!audio) return false;
+  if(!cfg.enableLocalMusic || !audio) return false;
   try{
-    await audio.play();
-    musicOn=true;
-    musicBtn.textContent="❚❚";
+    // Safari behaves more reliably when load() has already been called.
+    if(audio.readyState === 0) audio.load();
+    const p = audio.play();
+    if(p && typeof p.then === "function") await p;
+    musicOn = true;
+    musicReady = true;
+    musicBtn.textContent = "❚❚";
     musicBtn.classList.add("playing");
+    musicHint?.classList.remove("show");
     return true;
-  }catch(e){
+  }catch(err){
+    musicOn = false;
+    musicBtn.textContent = "♫";
+    musicBtn.classList.remove("playing");
+    showMusicHint("Chạm ♫ một lần để bật nhạc ❤️");
+    console.warn("Music play failed:", err);
     return false;
   }
 }
@@ -321,16 +342,35 @@ async function playMusic(){
 function stopMusic(){
   if(!audio) return;
   audio.pause();
-  musicOn=false;
-  musicBtn.textContent="♫";
+  musicOn = false;
+  musicBtn.textContent = "♫";
   musicBtn.classList.remove("playing");
 }
 
+// Important for iPhone: start audio directly from the earliest touch gesture.
+function firstGestureMusic(){
+  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && !musicOn){
+    playMusic();
+  }
+}
+envelope.addEventListener("touchstart", firstGestureMusic, {passive:true, once:true});
+envelope.addEventListener("pointerdown", firstGestureMusic, {passive:true, once:true});
+
+musicBtn.addEventListener("touchstart", (e)=>{
+  // Keep a direct user-gesture path for Safari.
+  if(!musicOn) playMusic();
+}, {passive:true});
+
 musicBtn.addEventListener("click", async ()=>{
-  if(!audio){
+  if(!cfg.enableLocalMusic || !audio){
     musicBtn.textContent="♡";
     return;
   }
   if(musicOn) stopMusic();
   else await playMusic();
 });
+
+audio?.addEventListener("error", ()=>{
+  showMusicHint("Không đọc được music.mp3");
+});
+
