@@ -2,6 +2,11 @@ const cfg = window.LOVE_CONFIG || {};
 const $ = s => document.querySelector(s);
 const screens = ["intro","story","question","finale"];
 
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const iphoneBoost = isIOS && cfg.iphoneEffectsBoost;
+
+
 function showScreen(id){
   flashScene();
   screens.forEach(x => $("#"+x).classList.toggle("active", x===id));
@@ -118,9 +123,9 @@ function spawnSparkle(){
 setInterval(()=>{
   if(!ambientMode) return;
   spawnHeart(false);
-  if(Math.random()>.35) spawnHeart(false);
-  if(Math.random()>.42) spawnSparkle();
-},360);
+  if(Math.random() > (iphoneBoost ? .18 : .35)) spawnHeart(false);
+  if(Math.random() > (iphoneBoost ? .28 : .42)) spawnSparkle();
+}, iphoneBoost ? 300 : 360);
 
 
 // ===== WOW AMBIENT EFFECTS =====
@@ -138,8 +143,8 @@ function spawnPetal(intense=false){
 }
 
 setInterval(()=>{
-  if(Math.random()>.36) spawnPetal(false);
-},820);
+  if(Math.random() > (iphoneBoost ? .24 : .36)) spawnPetal(false);
+}, iphoneBoost ? 700 : 820);
 
 function shootingStar(){
   const s=document.createElement("span");
