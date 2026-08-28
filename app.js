@@ -56,7 +56,7 @@ $("#thinkBtn").addEventListener("click", ()=>{
 
 $("#yesBtn").addEventListener("click", ()=>{
   burstConfetti();
-  $("#coupleNames").textContent = `${cfg.yourName || "ANH"} ❤️ ${cfg.partnerName || "EM"}`;
+  $("#coupleNames").textContent = `${cfg.yourName || "Quang Thuận"} ❤️ ${cfg.partnerName || "Huỳnh Giao"}`;
   $("#specialDate").textContent = cfg.specialDate || "";
   setTimeout(()=>showScreen("finale"),350);
   for(let i=0;i<35;i++) setTimeout(spawnHeart, i*80);
