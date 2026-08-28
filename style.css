@@ -55,7 +55,19 @@ button{font:inherit}
 .finale-quote{font-family:"Playfair Display",Georgia,serif;font-size:18px;line-height:1.75;max-width:580px;margin:16px auto;opacity:.92}
 .date{font-family:"Playfair Display",Georgia,serif;letter-spacing:5px;font-size:13px;font-weight:600;opacity:.68;margin-top:22px}
 .music-btn{position:fixed;z-index:10;right:18px;top:max(18px,env(safe-area-inset-top));width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);backdrop-filter:blur(10px);color:#fff;cursor:pointer}
-.floating-heart{position:absolute;bottom:-40px;font-size:var(--size);opacity:.9;animation:rise var(--duration) linear forwards;filter:drop-shadow(0 0 7px rgba(255,110,160,.35))}
+.floating-heart{
+  position:absolute;
+  bottom:-70px;
+  font-size:var(--size);
+  opacity:0;
+  animation:rise var(--duration) cubic-bezier(.18,.72,.28,1) forwards;
+  filter:
+    drop-shadow(0 0 7px rgba(255,118,165,.95))
+    drop-shadow(0 0 15px rgba(255,73,135,.55));
+  transform-origin:center;
+  will-change:transform,opacity;
+  user-select:none
+}
 .confetti{position:fixed;top:-20px;width:8px;height:14px;border-radius:3px;background:hsl(var(--h),85%,68%);z-index:12;animation:fall var(--d) linear forwards;transform:rotate(var(--r))}
 @keyframes fadeIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:scale(1)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
@@ -64,6 +76,103 @@ button{font:inherit}
 @keyframes blink{50%{opacity:0}}
 @keyframes rise{to{transform:translateY(-115vh) rotate(360deg);opacity:0}}
 @keyframes fall{to{transform:translateY(115vh) rotate(720deg);opacity:.1}}
+
+.heart-soft{
+  filter:
+    drop-shadow(0 0 5px rgba(255,205,220,.95))
+    drop-shadow(0 0 12px rgba(255,113,159,.55));
+}
+.heart-glow{
+  filter:
+    drop-shadow(0 0 8px rgba(255,238,244,1))
+    drop-shadow(0 0 18px rgba(255,93,150,.95))
+    drop-shadow(0 0 30px rgba(255,65,132,.55));
+}
+.heart-outline{
+  color:#ffd9e5;
+  text-shadow:0 0 8px rgba(255,255,255,.85),0 0 18px rgba(255,92,150,.75);
+}
+.sparkle-dot{
+  position:absolute;
+  bottom:-30px;
+  width:var(--dot);
+  height:var(--dot);
+  border-radius:50%;
+  background:rgba(255,240,246,.95);
+  box-shadow:
+    0 0 6px rgba(255,255,255,.95),
+    0 0 14px rgba(255,126,173,.9),
+    0 0 24px rgba(255,74,140,.45);
+  animation:sparkleRise var(--duration) linear forwards;
+  opacity:0;
+  pointer-events:none;
+}
+.heart-burst{
+  position:fixed;
+  left:50%;
+  top:50%;
+  z-index:15;
+  pointer-events:none;
+  font-size:var(--size);
+  animation:heartBurst var(--duration) cubic-bezier(.14,.68,.18,1) forwards;
+  filter:
+    drop-shadow(0 0 8px rgba(255,255,255,.85))
+    drop-shadow(0 0 18px rgba(255,89,149,.85));
+  will-change:transform,opacity;
+}
+.love-ring{
+  position:fixed;
+  left:50%;
+  top:50%;
+  z-index:14;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:2px solid rgba(255,190,213,.7);
+  transform:translate(-50%,-50%) scale(.2);
+  animation:ringPop 1.15s ease-out forwards;
+  pointer-events:none;
+  box-shadow:0 0 18px rgba(255,105,159,.35);
+}
+#heartRain::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(255,162,197,.06),transparent 28%),
+    radial-gradient(circle at 80% 35%,rgba(255,102,164,.05),transparent 30%),
+    radial-gradient(circle at 50% 80%,rgba(255,215,227,.04),transparent 36%);
+  pointer-events:none;
+}
+@keyframes rise{
+  0%{transform:translate3d(0,0,0) rotate(-12deg) scale(.72);opacity:0}
+  9%{opacity:.95}
+  45%{transform:translate3d(var(--drift1),-48vh,0) rotate(16deg) scale(1)}
+  78%{opacity:.88}
+  100%{transform:translate3d(var(--drift2),-118vh,0) rotate(34deg) scale(.88);opacity:0}
+}
+@keyframes sparkleRise{
+  0%{transform:translate3d(0,0,0) scale(.4);opacity:0}
+  12%{opacity:.95}
+  60%{opacity:.72}
+  100%{transform:translate3d(var(--drift),-112vh,0) scale(1.4);opacity:0}
+}
+@keyframes heartBurst{
+  0%{
+    transform:translate(-50%,-50%) rotate(0deg) scale(.45);
+    opacity:0
+  }
+  10%{opacity:1}
+  100%{
+    transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(var(--rot)) scale(1.15);
+    opacity:0
+  }
+}
+@keyframes ringPop{
+  0%{transform:translate(-50%,-50%) scale(.15);opacity:.9}
+  100%{transform:translate(-50%,-50%) scale(9);opacity:0}
+}
+
 @media (max-width:480px){
   .screen{padding:18px}
   .glass{padding:26px 18px;border-radius:24px}
