@@ -382,15 +382,6 @@ button{font:inherit}
   from{opacity:.2;transform:scale(.8)}
   to{opacity:.9;transform:scale(1.25)}
 }
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{
-    animation-duration:.01ms !important;
-    animation-iteration-count:1 !important;
-    scroll-behavior:auto !important;
-  }
-}
-
-
 /* ===== DELUXE v0.3.0 ===== */
 .intro-kicker{
   position:absolute;
@@ -523,6 +514,24 @@ button{font:inherit}
 @keyframes finaleEnter{
   from{opacity:0;transform:translateY(20px) scale(.97);filter:blur(8px)}
   to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+
+
+/* iPhone/Safari optimization: keep animations visible, reduce GPU-heavy blur only */
+@supports (-webkit-touch-callout: none) {
+  .glass{
+    -webkit-backdrop-filter:blur(12px);
+    backdrop-filter:blur(12px);
+  }
+  .aurora{filter:blur(56px)}
+  .floating-heart{
+    will-change:transform,opacity;
+    -webkit-transform:translateZ(0);
+  }
+  .rose-petal,.confetti,.heart-burst,.sparkle-dot{
+    -webkit-transform:translateZ(0);
+    will-change:transform,opacity;
+  }
 }
 
 @media (max-width:480px){
