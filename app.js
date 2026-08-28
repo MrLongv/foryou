@@ -6,7 +6,6 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 const iphoneBoost = isIOS && cfg.iphoneEffectsBoost;
 
-
 function showScreen(id){
   flashScene();
   screens.forEach(x => $("#"+x).classList.toggle("active", x===id));
@@ -33,6 +32,7 @@ function typeText(text, done){
 }
 
 envelope.addEventListener("click", ()=>{
+  if(audio && audio.paused) playMusic();
   envelope.classList.add("open");
   romanticBurst(20);
   for(let i=0;i<14;i++) setTimeout(()=>spawnPetal(true),i*55);
@@ -83,24 +83,18 @@ let ambientMode = true;
 function spawnHeart(intense=false){
   const h=document.createElement("span");
   h.className="floating-heart";
-
-  const icon=HEARTS[Math.floor(Math.random()*HEARTS.length)];
-  h.textContent=icon;
-
+  h.textContent=HEARTS[Math.floor(Math.random()*HEARTS.length)];
   const size=intense ? 18+Math.random()*34 : 12+Math.random()*27;
   const duration=intense ? 4.2+Math.random()*3.2 : 5.3+Math.random()*4.2;
-
   h.style.left=(Math.random()*100)+"vw";
   h.style.setProperty("--size",size+"px");
   h.style.setProperty("--duration",duration+"s");
   h.style.setProperty("--drift1",(-45+Math.random()*90)+"px");
   h.style.setProperty("--drift2",(-85+Math.random()*170)+"px");
-
   const styleRoll=Math.random();
   if(styleRoll>.72) h.classList.add("heart-glow");
   else if(styleRoll>.42) h.classList.add("heart-soft");
   else h.classList.add("heart-outline");
-
   h.style.opacity=(.66+Math.random()*.34).toFixed(2);
   $("#heartRain").appendChild(h);
   setTimeout(()=>h.remove(),10000);
@@ -136,10 +130,7 @@ function spawnPetal(intense=false){
   $("#petals").appendChild(p);
   setTimeout(()=>p.remove(),13000);
 }
-
-setInterval(()=>{
-  if(Math.random() > (iphoneBoost ? .24 : .36)) spawnPetal(false);
-}, iphoneBoost ? 700 : 820);
+setInterval(()=>{ if(Math.random() > (iphoneBoost ? .24 : .36)) spawnPetal(false); }, iphoneBoost ? 700 : 820);
 
 function shootingStar(){
   const s=document.createElement("span");
@@ -149,9 +140,7 @@ function shootingStar(){
   $("#shootingStars").appendChild(s);
   setTimeout(()=>s.remove(),1600);
 }
-setInterval(()=>{
-  if(Math.random()>.76) shootingStar();
-},3800);
+setInterval(()=>{ if(Math.random()>.76) shootingStar(); },3800);
 
 function cinematicLoveWave(){
   romanticBurst(72);
@@ -166,17 +155,14 @@ function romanticBurst(count=44){
   ring.className="love-ring";
   document.body.appendChild(ring);
   setTimeout(()=>ring.remove(),1300);
-
   for(let i=0;i<count;i++){
     const h=document.createElement("span");
     h.className="heart-burst";
     h.textContent=HEARTS[Math.floor(Math.random()*HEARTS.length)];
     const angle=Math.random()*Math.PI*2;
     const distance=95+Math.random()*Math.min(innerWidth,innerHeight)*.62;
-    const x=Math.cos(angle)*distance;
-    const y=Math.sin(angle)*distance;
-    h.style.setProperty("--x",x+"px");
-    h.style.setProperty("--y",y+"px");
+    h.style.setProperty("--x",Math.cos(angle)*distance+"px");
+    h.style.setProperty("--y",Math.sin(angle)*distance+"px");
     h.style.setProperty("--rot",(-120+Math.random()*240)+"deg");
     h.style.setProperty("--size",(18+Math.random()*34)+"px");
     h.style.setProperty("--duration",(1.15+Math.random()*1.55)+"s");
@@ -211,35 +197,6 @@ function buildHeartConstellation(){
   const box=$("#heartConstellation");
   if(!box || box.dataset.built==="1") return;
   box.dataset.built="1";
-  const pts=[];
-  const W=320,H=150,cx=160,cy=73;
-  for(let i=0;i<34;i++){
-    const t=(Math.PI*2*i)/34;
-    const x=16*Math.sin(t)**3;
-    const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
-    pts.push({x:cx+x*8.0,y:cy-y*6.1});
-  }
-  pts.forEach((p,i)=>{
-    const d=document.createElement("span");
-    d.className="constellation-dot";
-    d.style.left=`${(p.x/W)*100}%`;
-    d.style.top=`${(p.y/H)*100}%`;
-    d.style.setProperty("--t",(1.15+Math.random()*1.8)+"s");
-    box.appendChild(d);
-    if(i<pts.length-1){
-      const q=pts[i+1];
-      const dx=q.x-p.x,dy=q.y-p.y;
-      const len=Math.hypot(dx,dy);
-      const a=Math.atan2(dy,dx)*180/Math.PI;
-      const line=document.createElement("span");
-      line.className="constellation-line";
-      line.style.left=`${(p.x/W)*100}%`;
-      line.style.top=`${(p.y/H)*100}%`;
-      line.style.width=`${(len/W)*100}%`;
-      line.style.transform=`rotate(${a}deg)`;
-      box.appendChild(line);
-    }
-  });
 }
 
 function setupCouplePhoto(){
@@ -259,9 +216,7 @@ function resize(){
   canvas.width=innerWidth*dpr; canvas.height=innerHeight*dpr;
   canvas.style.width=innerWidth+"px"; canvas.style.height=innerHeight+"px";
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  stars=Array.from({length:Math.min(110,Math.floor(innerWidth/4))},()=>({
-    x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:.4+Math.random()*1.4,a:.2+Math.random()*.8,s:.002+Math.random()*.008
-  }));
+  stars=Array.from({length:Math.min(110,Math.floor(innerWidth/4))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:.4+Math.random()*1.4,a:.2+Math.random()*.8,s:.002+Math.random()*.008}));
 }
 function draw(){
   ctx.clearRect(0,0,innerWidth,innerHeight);
@@ -273,96 +228,67 @@ function draw(){
 }
 addEventListener("resize",resize); resize(); draw();
 
-// v0.3.3 - reliable music playback for iPhone/Safari
+// v0.3.4 — music hard-wired directly to music.mp3; config can no longer accidentally disable it on iPhone.
 const audio = $("#bgMusic");
 const musicBtn = $("#musicBtn");
 const musicHint = $("#musicHint");
 let musicOn = false;
 
-function showMusicHint(text="Chạm ♫ để bật nhạc ❤️", sticky=false){
+function showMusicHint(text="Chạm ♫ để bật nhạc ❤️", keep=3200){
   if(!musicHint) return;
   musicHint.textContent = text;
   musicHint.classList.add("show");
   clearTimeout(showMusicHint._t);
-  if(!sticky) showMusicHint._t = setTimeout(()=>musicHint.classList.remove("show"),3600);
+  showMusicHint._t = setTimeout(()=>musicHint.classList.remove("show"),keep);
 }
 
-function syncMusicUI(){
-  musicOn = !!audio && !audio.paused && !audio.ended;
-  if(!musicBtn) return;
-  musicBtn.textContent = musicOn ? "❚❚" : "♫";
-  musicBtn.classList.toggle("playing", musicOn);
-  if(musicOn) musicHint?.classList.remove("show");
-}
-
-if(cfg.enableLocalMusic && audio){
-  const file = cfg.musicFile || "music.mp3";
-  const sep = file.includes("?") ? "&" : "?";
-  audio.src = `${file}${sep}v=033`;
+if(audio){
+  audio.src = "./music.mp3?v=034";
   audio.loop = true;
+  audio.volume = 0.65;
   audio.preload = "auto";
-  audio.volume = .55;
-  audio.muted = false;
-  audio.setAttribute("playsinline", "");
-  audio.setAttribute("webkit-playsinline", "");
-  try{ audio.load(); }catch(e){}
+  try { audio.load(); } catch(e) {}
 }
 
-function startMusic(){
-  if(!cfg.enableLocalMusic || !audio) return;
-  audio.muted = false;
-  audio.volume = .55;
+async function playMusic(){
+  if(!audio){ showMusicHint("Không tìm thấy bộ phát nhạc"); return false; }
   try{
-    const promise = audio.play();
-    if(promise && typeof promise.catch === "function"){
-      promise.then(syncMusicUI).catch(err=>{
-        syncMusicUI();
-        console.warn("Audio play blocked:", err);
-        showMusicHint("Chạm nút ♫ để bật nhạc ❤️", true);
-      });
+    if(!audio.src) audio.src = "./music.mp3?v=034";
+    const p = audio.play();
+    if(p && typeof p.then === "function") await p;
+    musicOn = !audio.paused;
+    if(musicOn){
+      musicBtn.textContent = "❚❚";
+      musicBtn.classList.add("playing");
+      musicHint?.classList.remove("show");
+      return true;
     }
+    showMusicHint("Chạm ♫ để bật nhạc ❤️");
+    return false;
   }catch(err){
-    console.warn("Audio play failed:", err);
-    showMusicHint("Chạm nút ♫ để bật nhạc ❤️", true);
+    musicOn = false;
+    musicBtn.textContent = "♫";
+    musicBtn.classList.remove("playing");
+    const code = audio.error?.code || 0;
+    showMusicHint(code===4 ? "iPhone không đọc được định dạng file nhạc này" : "Safari đang chặn nhạc — chạm ♫ thêm một lần",5000);
+    return false;
   }
 }
 
 function stopMusic(){
   if(!audio) return;
   audio.pause();
-  syncMusicUI();
+  musicOn = false;
+  musicBtn.textContent = "♫";
+  musicBtn.classList.remove("playing");
 }
 
-envelope.addEventListener("click", ()=>{
-  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && audio?.paused) startMusic();
-}, {capture:true});
-
-musicBtn.addEventListener("click", (e)=>{
+musicBtn.addEventListener("click", async (e)=>{
   e.preventDefault();
-  e.stopPropagation();
-  if(!cfg.enableLocalMusic || !audio){
-    showMusicHint("Chưa bật file nhạc trong config.js", true);
-    return;
-  }
-  if(audio.paused || audio.ended) startMusic();
-  else stopMusic();
+  if(!audio) return;
+  if(audio.paused) await playMusic(); else stopMusic();
 });
 
-audio?.addEventListener("playing", syncMusicUI);
-audio?.addEventListener("pause", syncMusicUI);
-audio?.addEventListener("ended", syncMusicUI);
-audio?.addEventListener("canplay", ()=>{
-  if(!musicOn && cfg.enableLocalMusic) musicBtn.title = "Bật nhạc";
-});
-audio?.addEventListener("error", ()=>{
-  const code = audio?.error?.code || "?";
-  console.warn("music.mp3 error code:", code, audio?.currentSrc);
-  showMusicHint("Không đọc được music.mp3 – hãy thử chạm ♫", true);
-});
-
-window.addEventListener("pageshow", ()=>{
-  syncMusicUI();
-  if(cfg.enableLocalMusic && audio && audio.readyState === 0){
-    try{ audio.load(); }catch(e){}
-  }
-});
+audio?.addEventListener("play", ()=>{ musicOn=true; musicBtn.textContent="❚❚"; musicBtn.classList.add("playing"); });
+audio?.addEventListener("pause", ()=>{ musicOn=false; musicBtn.textContent="♫"; musicBtn.classList.remove("playing"); });
+audio?.addEventListener("error", ()=>{ showMusicHint(audio.error?.code===4 ? "iPhone không hỗ trợ mã hóa của music.mp3" : "Không tải được music.mp3",6000); });
