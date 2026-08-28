@@ -3,7 +3,9 @@ const $ = s => document.querySelector(s);
 const screens = ["intro","story","question","finale"];
 
 function showScreen(id){
+  flashScene();
   screens.forEach(x => $("#"+x).classList.toggle("active", x===id));
+  if(id==="finale") setTimeout(buildHeartConstellation,260);
 }
 
 const envelope = $("#envelope");
@@ -25,9 +27,11 @@ function typeText(text, done){
   }, 48);
 }
 
-envelope.addEventListener("click", ()=>{
+envelope.addEventListener("click", async ()=>{
+  if(cfg.enableLocalMusic && cfg.autoPlayAfterFirstTap && !musicOn) await playMusic();
   envelope.classList.add("open");
-  romanticBurst(18);
+  romanticBurst(20);
+  for(let i=0;i<14;i++) setTimeout(()=>spawnPetal(true),i*55);
   setTimeout(()=>{
     showScreen("story");
     msgIndex = 0;
@@ -58,13 +62,15 @@ $("#thinkBtn").addEventListener("click", ()=>{
 
 $("#yesBtn").addEventListener("click", ()=>{
   burstConfetti();
-  romanticBurst(56);
+  cinematicLoveWave();
   $("#coupleNames").textContent = `${cfg.yourName || "ANH"} ❤️ ${cfg.partnerName || "EM"}`;
   $("#specialDate").textContent = cfg.specialDate || "";
   setTimeout(()=>{
     showScreen("finale");
-    romanticBurst(42);
-  },420);
+    cinematicLoveWave();
+    setTimeout(()=>romanticBurst(46),850);
+    setTimeout(()=>romanticBurst(34),1650);
+  },480);
 });
 
 const HEARTS = ["❤","♥","♡","💗","💕","💖","💞"];
@@ -116,6 +122,45 @@ setInterval(()=>{
   if(Math.random()>.42) spawnSparkle();
 },360);
 
+
+// ===== WOW AMBIENT EFFECTS =====
+function spawnPetal(intense=false){
+  const p=document.createElement("span");
+  p.className="rose-petal";
+  p.style.left=(-5+Math.random()*110)+"vw";
+  p.style.setProperty("--w",(intense ? 10+Math.random()*14 : 7+Math.random()*12)+"px");
+  p.style.setProperty("--d",(intense ? 5.8+Math.random()*3.5 : 7.2+Math.random()*5.2)+"s");
+  p.style.setProperty("--r",(Math.random()*180)+"deg");
+  p.style.setProperty("--x1",(-45+Math.random()*90)+"px");
+  p.style.setProperty("--x2",(-105+Math.random()*210)+"px");
+  $("#petals").appendChild(p);
+  setTimeout(()=>p.remove(),13000);
+}
+
+setInterval(()=>{
+  if(Math.random()>.36) spawnPetal(false);
+},820);
+
+function shootingStar(){
+  const s=document.createElement("span");
+  s.className="shooting-star";
+  s.style.left=(-20+Math.random()*55)+"vw";
+  s.style.top=(3+Math.random()*38)+"vh";
+  $("#shootingStars").appendChild(s);
+  setTimeout(()=>s.remove(),1600);
+}
+setInterval(()=>{
+  if(Math.random()>.76) shootingStar();
+},3800);
+
+function cinematicLoveWave(){
+  romanticBurst(72);
+  for(let i=0;i<34;i++) setTimeout(()=>spawnPetal(true), i*42);
+  for(let i=0;i<28;i++) setTimeout(()=>spawnSparkle(), i*48);
+  shootingStar();
+  setTimeout(shootingStar,480);
+}
+
 function romanticBurst(count=44){
   const ring=document.createElement("div");
   ring.className="love-ring";
@@ -161,6 +206,67 @@ function burstConfetti(){
   }
 }
 
+
+function flashScene(){
+  const f=$("#sceneFlash");
+  if(!f) return;
+  f.classList.remove("play");
+  void f.offsetWidth;
+  f.classList.add("play");
+}
+
+function buildHeartConstellation(){
+  const box=$("#heartConstellation");
+  if(!box || box.dataset.built==="1") return;
+  box.dataset.built="1";
+
+  const pts=[];
+  const W=320,H=150,cx=160,cy=73;
+  for(let i=0;i<34;i++){
+    const t=(Math.PI*2*i)/34;
+    // classic heart curve
+    const x=16*Math.sin(t)**3;
+    const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+    pts.push({
+      x:cx+x*8.0,
+      y:cy-y*6.1
+    });
+  }
+
+  pts.forEach((p,i)=>{
+    const d=document.createElement("span");
+    d.className="constellation-dot";
+    d.style.left=`${(p.x/W)*100}%`;
+    d.style.top=`${(p.y/H)*100}%`;
+    d.style.setProperty("--t",(1.15+Math.random()*1.8)+"s");
+    box.appendChild(d);
+
+    if(i<pts.length-1){
+      const q=pts[i+1];
+      const dx=q.x-p.x,dy=q.y-p.y;
+      const len=Math.hypot(dx,dy);
+      const a=Math.atan2(dy,dx)*180/Math.PI;
+      const line=document.createElement("span");
+      line.className="constellation-line";
+      line.style.left=`${(p.x/W)*100}%`;
+      line.style.top=`${(p.y/H)*100}%`;
+      line.style.width=`${(len/W)*100}%`;
+      line.style.transform=`rotate(${a}deg)`;
+      box.appendChild(line);
+    }
+  });
+}
+
+function setupCouplePhoto(){
+  const frame=$("#photoFrame");
+  const img=$("#couplePhoto");
+  if(!frame || !img || !cfg.showPhotoIfAvailable || !cfg.couplePhoto) return;
+  img.onload=()=>frame.classList.remove("hidden-photo");
+  img.onerror=()=>frame.classList.add("hidden-photo");
+  img.src=cfg.couplePhoto;
+}
+setupCouplePhoto();
+
 // starfield
 const canvas=$("#stars"), ctx=canvas.getContext("2d");
 let stars=[];
@@ -186,16 +292,40 @@ addEventListener("resize",resize); resize(); draw();
 // optional local music
 let audio=null, musicOn=false;
 const musicBtn=$("#musicBtn");
+
 if(cfg.enableLocalMusic){
-  audio=new Audio("music.mp3"); audio.loop=true; audio.volume=.45;
+  audio=new Audio(cfg.musicFile || "music.mp3");
+  audio.loop=true;
+  audio.volume=.38;
+  audio.preload="auto";
 }
+
+async function playMusic(){
+  if(!audio) return false;
+  try{
+    await audio.play();
+    musicOn=true;
+    musicBtn.textContent="❚❚";
+    musicBtn.classList.add("playing");
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function stopMusic(){
+  if(!audio) return;
+  audio.pause();
+  musicOn=false;
+  musicBtn.textContent="♫";
+  musicBtn.classList.remove("playing");
+}
+
 musicBtn.addEventListener("click", async ()=>{
   if(!audio){
     musicBtn.textContent="♡";
     return;
   }
-  if(musicOn){ audio.pause(); musicOn=false; musicBtn.textContent="♫"; }
-  else{
-    try{ await audio.play(); musicOn=true; musicBtn.textContent="❚❚"; }catch(e){}
-  }
+  if(musicOn) stopMusic();
+  else await playMusic();
 });
